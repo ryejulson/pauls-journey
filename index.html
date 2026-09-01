@@ -95,7 +95,7 @@
   /* ---------- map ---------- */
   .map-viewport{
     position:relative; flex:1 1 auto; overflow:hidden; touch-action:none;
-    cursor:grab;
+    cursor:grab; contain:layout paint;
   }
   .map-viewport.grabbing{ cursor:grabbing; }
   svg#map{
@@ -212,6 +212,14 @@
   .zoom-controls{
     position:absolute; right:10px; bottom:14px; z-index:6;
     display:flex; flex-direction:column; gap:6px;
+  }
+
+  /* Mobile GPUs struggle to continuously composite SVG blur filters while the
+     3,600px map is being panned. Keep the full map, but use clean vector
+     styling on touch-sized devices. */
+  @media (pointer:coarse), (max-width:900px){
+    .route.active, .church-star{ filter:none; }
+    svg#map{ will-change:transform; }
   }
   .zoombtn{
     width:32px; height:32px; border-radius:8px;
@@ -791,6 +799,8 @@ function smoothPath(points, closed){
    BUILD SVG
 ============================================================ */
 const svg = document.getElementById('map');
+const LIGHTWEIGHT_MAP = window.matchMedia('(pointer: coarse)').matches ||
+                        window.matchMedia('(max-width: 900px)').matches;
 svg.setAttribute('width', MAP_W);
 svg.setAttribute('height', MAP_H);
 svg.setAttribute('viewBox', `0 0 ${MAP_W} ${MAP_H}`);
@@ -808,13 +818,13 @@ defs.innerHTML = `
     <feGaussianBlur stdDeviation="5" result="b"/>
     <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
   </filter>
-` + [...new Set(LANDMASSES.map(l=>l.seed))].map(seed=>`
+` + (LIGHTWEIGHT_MAP ? '' : [...new Set(LANDMASSES.map(l=>l.seed))].map(seed=>`
   <filter id="noise${seed}" x="-20%" y="-20%" width="140%" height="140%">
     <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="${seed}" result="n"/>
     <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.5 0" result="coloredNoise"/>
     <feComposite in="coloredNoise" in2="SourceGraphic" operator="in"/>
   </filter>
-`).join('');
+`).join(''));
 svg.appendChild(defs);
 
 // water graticule (decorative)
@@ -840,7 +850,9 @@ LANDMASSES.forEach(l=>{
   const d = straightClosedPath(proj);
   l.d = d;
   svg.appendChild(svgEl('path',{ d, class:'land' }));
-  svg.appendChild(svgEl('path',{ d, class:'land-noise', fill:'#fff', opacity:'0.16', filter:`url(#noise${l.seed})` }));
+  if(!LIGHTWEIGHT_MAP){
+    svg.appendChild(svgEl('path',{ d, class:'land-noise', fill:'#fff', opacity:'0.16', filter:`url(#noise${l.seed})` }));
+  }
 });
 const countryBordersG = svgEl('g', { id:'countryBorders' });
 LANDMASSES.forEach(l=>{
@@ -1049,6 +1061,17 @@ function applyTransform(){
   chipTo.style.transform = `translate(${sx(tp)+10}px, ${sy(tp)-11}px)`;
 }
 
+// Pointer events can arrive much faster than the screen can paint. Coalesce
+// drag/pinch work into one transform per animation frame.
+let transformFrame = 0;
+function scheduleTransform(){
+  if(transformFrame) return;
+  transformFrame = requestAnimationFrame(()=>{
+    transformFrame = 0;
+    applyTransform();
+  });
+}
+
 function render(){
   const leg = LEGS[current];
   const vw = viewport.clientWidth, vh = viewport.clientHeight;
@@ -1147,10 +1170,11 @@ function prev(){ if(current>0) goTo(current-1); }
 function currentEffectiveScale(){
   return userScale !== null ? userScale : legTransform.s;
 }
-function setZoom(newScale){
+function setZoom(newScale, deferPaint=false){
   const baseline = worldBaseline();
   userScale = Math.max(baseline*0.85, Math.min(newScale, baseline*90));
-  applyTransform();
+  if(deferPaint) scheduleTransform();
+  else applyTransform();
 }
 
 function hideHint(){ hint.style.opacity='0'; }
@@ -1206,14 +1230,14 @@ viewport.addEventListener('pointermove', e=>{
   activePointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
   if(pinching && activePointers.size===2){
     const ratio = pointerDist() / (pinchStartDist||1);
-    setZoom(pinchStartZoom * ratio);
+    setZoom(pinchStartZoom * ratio, true);
     hideHint();
   } else if(dragging && activePointers.size===1){
     const s = currentEffectiveScale();
     const dx = e.clientX-startX, dy = e.clientY-startY;
     panX = panStartX - dx/s;
     panY = panStartY - dy/s;
-    applyTransform();
+    scheduleTransform();
     hideHint();
   }
 });
