@@ -191,10 +191,15 @@
   }
   .church-star:hover, .church-star:focus{ transform:scale(1.35); outline:none; }
   .scripture-site{
-    cursor:pointer; transform-box:fill-box; transform-origin:center;
+    cursor:pointer;
+  }
+  .scripture-site:focus{ outline:none; }
+  .scripture-site .site-glyph{
+    transform-box:fill-box; transform-origin:center;
     transition:transform .18s ease;
   }
-  .scripture-site:hover, .scripture-site:focus{ transform:scale(1.3); outline:none; }
+  .scripture-site:hover .site-glyph,
+  .scripture-site:focus .site-glyph{ transform:scale(1.22); }
   .scripture-site .site-hit{ fill:transparent; pointer-events:all; }
   .scripture-site .site-diamond{
     fill:#9fd0e8; stroke:#07151d; stroke-width:1.1;
@@ -1571,25 +1576,31 @@ Object.keys(CHURCHES).forEach(k=>{
 
 // Permanent Scripture-significance markers. Offset opposite the church stars
 // so locations that have both remain easy to distinguish and tap.
+const scriptureMarkerEls = [];
 Object.keys(SIGNIFICANT_PLACES).forEach(k=>{
   const p = PLACES[k];
-  const sx = p.x - 10, sy = p.y - 10;
   const marker = svgEl('g', {
     class:'scripture-site', tabindex:'0', role:'button',
-    'aria-label':`${p.name} \u2014 show biblical significance and references`
+    'aria-label':`${p.name} \u2014 show biblical significance and references`,
+    transform:`translate(${p.x} ${p.y})`
   });
-  marker.appendChild(svgEl('circle',{cx:sx,cy:sy,r:11,class:'site-hit'}));
-  marker.appendChild(svgEl('path',{
-    d:`M${sx},${sy-7.5} L${sx+7.5},${sy} L${sx},${sy+7.5} L${sx-7.5},${sy} Z`,
+  const offset=svgEl('g',{transform:'translate(-10 -10)'});
+  const glyph=svgEl('g',{class:'site-glyph'});
+  glyph.appendChild(svgEl('circle',{cx:0,cy:0,r:11,class:'site-hit'}));
+  glyph.appendChild(svgEl('path',{
+    d:'M0,-7.5 L7.5,0 L0,7.5 L-7.5,0 Z',
     class:'site-diamond'
   }));
-  marker.appendChild(svgEl('path',{
-    d:`M${sx-3.5},${sy-2.2} L${sx},${sy-.6} L${sx+3.5},${sy-2.2} M${sx-3.5},${sy+1} L${sx},${sy+2.6} L${sx+3.5},${sy+1}`,
+  glyph.appendChild(svgEl('path',{
+    d:'M-3.5,-2.2 L0,-.6 L3.5,-2.2 M-3.5,1 L0,2.6 L3.5,1',
     class:'site-mark'
   }));
+  offset.appendChild(glyph);
+  marker.appendChild(offset);
   marker.addEventListener('click', e=>{ e.stopPropagation(); openSignificantPlaceModal(k); });
   marker.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openSignificantPlaceModal(k); } });
   svg.appendChild(marker);
+  scriptureMarkerEls.push({el:marker,x:p.x,y:p.y});
 });
 
 /* ============================================================
@@ -1668,6 +1679,13 @@ function applyTransform(){
   holyDetailG.classList.toggle('visible',showHolyDetail);
   holyDetailG.setAttribute('aria-hidden',String(!showHolyDetail));
   svg.classList.toggle('holy-detail-view',showHolyDetail);
+
+  // Keep blue Scripture markers a constant physical size while the geography
+  // zooms beneath them. The outer SVG contributes scale(s); this cancels it.
+  const markerScale=1/s;
+  scriptureMarkerEls.forEach(m=>{
+    m.el.setAttribute('transform',`translate(${m.x} ${m.y}) scale(${markerScale})`);
+  });
 
   const leg = LEGS[current];
   const fp = PLACES[leg.path[0]], tp = PLACES[leg.path[leg.path.length-1]];
