@@ -336,6 +336,27 @@
     color:#bfe6f7; border:1px solid rgba(159,208,232,.38);
     background:rgba(159,208,232,.08); padding:3px 8px; border-radius:999px;
   }
+  .modal .authorities-open{ background:#9fd0e8; color:#07151d; }
+  .authority-era{
+    font-family:'Oswald',sans-serif; color:#9fd0e8; letter-spacing:.06em;
+    text-transform:uppercase; font-size:12px; margin-bottom:12px;
+  }
+  .authority-card{
+    border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.025);
+    border-radius:8px; padding:11px 12px; margin-top:9px;
+  }
+  .authority-card h4{
+    font-family:'Oswald',sans-serif; color:#fff; font-size:12px;
+    letter-spacing:.08em; text-transform:uppercase; margin:0 0 5px;
+  }
+  .authority-card p{ margin:0; }
+  .authority-note{ margin-top:10px; font-size:11.5px; font-style:italic; }
+  .authority-nav{ display:grid; grid-template-columns:1fr auto 1fr; gap:7px; margin-top:14px; }
+  .modal .authority-nav button{ margin:0; padding:8px 10px; }
+  .modal .authority-back{ background:rgba(255,255,255,.1); color:var(--text); }
+  .modal .authority-later{ justify-self:stretch; }
+  .modal .authority-earlier{ justify-self:stretch; }
+  .modal .authority-nav button[disabled]{ opacity:.28; cursor:default; }
 
   @media (min-width:720px){
     .panel{ max-height:26vh; }
@@ -636,6 +657,72 @@ const SIGNIFICANT_PLACES = {
   rome: {
     summary:"Rome is the destination toward which the final chapters of Acts move. Paul arrives as a prisoner, meets the local Jewish leaders, and spends two years proclaiming God's kingdom and teaching about Jesus with boldness while under house arrest.",
     refs:["Acts 19:21","Acts 23:11","Acts 28:14\u201331","Romans 1:7\u201315"]
+  }
+};
+
+/* Authority view follows the five eras already used by the journey tabs.
+   Named officials are included where Scripture or the historical record gives
+   a useful identification; otherwise the app says so instead of guessing. */
+const AUTHORITY_ERAS = [
+  {j:'j0', label:'Conversion \u00b7 c. AD 34\u201336', emperor:'Tiberius (AD 14\u201337)'},
+  {j:'j1', label:'First journey \u00b7 c. AD 46\u201348', emperor:'Claudius (AD 41\u201354)'},
+  {j:'j2', label:'Second journey \u00b7 c. AD 49\u201352', emperor:'Claudius (AD 41\u201354)'},
+  {j:'j3', label:'Third journey \u00b7 c. AD 53\u201357', emperor:'Claudius, then Nero from AD 54'},
+  {j:'j4', label:'Journey to Rome \u00b7 c. AD 59\u201360', emperor:'Nero (AD 54\u201368)'}
+];
+
+const PLACE_AUTHORITY_REGION = {
+  jerusalem:'judea', caesarea:'judea', damascus:'damascus', antiochSyria:'syria',
+  paphos:'cyprus', lystra:'galatia', philippi:'macedonia', athens:'achaia',
+  corinth:'achaia', ephesus:'asia', miletus:'asia', malta:'malta', rome:'rome'
+};
+
+const AUTHORITY_REGIONS = {
+  judea:{ name:'Judea', roman:'Judea was governed within the Roman imperial system from Caesarea.', jewish:'Jewish religious leadership centered on the high priest, chief priests, and Sanhedrin in Jerusalem.' },
+  damascus:{ name:'Damascus and southern Syria', roman:'Damascus lay within Rome\'s Syrian sphere, though the precise status of the city around Paul\'s conversion and escape is debated.', jewish:'The city had organized synagogues, but no independent Jewish civil government.' },
+  syria:{ name:'Roman Syria', roman:'The area belonged to the Roman province of Syria; Acts does not name its provincial governor in this period.', jewish:'Jewish communal authority was local and synagogue-based, not a parallel territorial government.' },
+  cyprus:{ name:'Cyprus', roman:'Cyprus was a senatorial province governed by a Roman proconsul.', jewish:'Jewish communities worshiped in local synagogues; no Jewish political ruler governed the island.' },
+  galatia:{ name:'Roman Galatia', roman:'This part of Asia Minor belonged to the Roman province of Galatia; Acts does not name its provincial governor.', jewish:'Synagogue leaders exercised authority within Jewish communities, but they did not govern the Roman cities.' },
+  macedonia:{ name:'Macedonia', roman:'Macedonia was a Roman province. Philippi was also a Roman colony governed locally by civic magistrates.', jewish:'Jewish communal leadership was local; at Philippi Acts describes a prayer gathering rather than naming synagogue officials.' },
+  achaia:{ name:'Achaia', roman:'Athens and Corinth lay in the Roman province of Achaia. Corinth was the provincial capital; Athens retained important civic institutions.', jewish:'Jewish communities were organized around their synagogues, without Jewish territorial rule.' },
+  asia:{ name:'Roman Asia', roman:'Ephesus and Miletus belonged to the senatorial province of Asia, governed by a proconsul with strong local civic institutions.', jewish:'Jewish leadership was exercised through local synagogues, not a regional Jewish government.' },
+  malta:{ name:'Malta', roman:'Malta belonged to the Roman world and was administered in connection with the province of Sicily.', jewish:'Acts identifies no Jewish governing body or synagogue leadership on Malta.' },
+  rome:{ name:'Rome and Italy', roman:'Rome was the imperial capital, with authority flowing from the emperor through imperial and civic officials.', jewish:'Rome had an established Jewish community led by local community leaders, not a Jewish civil ruler.' }
+};
+
+const AUTHORITY_DETAILS = {
+  judea:{
+    j0:{roman:'Pontius Pilate was prefect of Judea under Emperor Tiberius.',jewish:'Joseph Caiaphas was high priest. The high priest and council authorized Saul\'s campaign against believers.',refs:['Acts 9:1\u20132']},
+    j1:{roman:'Tiberius Julius Alexander served as procurator for much of this period under Emperor Claudius.',jewish:'Ananias son of Nedebaios became high priest around AD 46; Jerusalem\'s apostles and elders led the church at the council.',refs:['Acts 15:1\u201335','Josephus, Antiquities 20']},
+    j2:{roman:'Ventidius Cumanus governed Judea under Emperor Claudius.',jewish:'Ananias was high priest, while the chief priests and Sanhedrin remained the central Jewish religious authorities.',refs:['Josephus, Antiquities 20']},
+    j3:{roman:'Antonius Felix governed Judea from Caesarea, first under Claudius and then Nero.',jewish:'Ananias was high priest when Paul appeared before the Sanhedrin and later joined the case against him before Felix.',refs:['Acts 23:1\u20135','Acts 24:1\u201327']},
+    j4:{roman:'Porcius Festus succeeded Felix as governor under Nero and heard Paul\'s appeal at Caesarea.',jewish:'The chief priests and leading men pressed charges. Herod Agrippa II, a Roman client king with influence over Jewish religious affairs, advised Festus but did not govern Judea.',refs:['Acts 24:27','Acts 25:1\u201327','Acts 26:1\u201332']}
+  },
+  damascus:{
+    j0:{roman:'Tiberius was emperor. At the time of Paul\'s later escape, an ethnarch acting for the Nabataean king Aretas IV guarded Damascus; how this related to Roman control is debated.',jewish:'The Jerusalem high priest authorized Saul to work with Damascus synagogues against followers of Jesus.',refs:['Acts 9:1\u201325','2 Corinthians 11:32\u201333']}
+  },
+  cyprus:{
+    j1:{roman:'Sergius Paulus is named as the proconsul of Cyprus when Paul and Barnabas reach Paphos.',refs:['Acts 13:6\u201312']}
+  },
+  galatia:{
+    j1:{roman:'Roman colonial and city authorities governed the region. Acts names no provincial governor during these visits.',jewish:'Synagogue leaders opposed Paul in Pisidian Antioch and Iconium; at Lystra the crowd and city population dominate the account.',refs:['Acts 13:14\u201314:20']},
+    j2:{roman:'Roman provincial and local civic authorities remained in charge; Acts names no governor.',jewish:'Local believers and elders led the churches Paul revisited; Timothy joined the mission at Lystra.',refs:['Acts 16:1\u20135']}
+  },
+  macedonia:{
+    j2:{roman:'Philippi\'s civic magistrates ordered Paul and Silas beaten and jailed; the jailer served under that local Roman authority.',jewish:'Acts names no synagogue ruler at Philippi and describes believers first gathering at a place of prayer by the river.',refs:['Acts 16:11\u201340']}
+  },
+  achaia:{
+    j2:{roman:'Gallio was proconsul of Achaia when Jewish opponents brought Paul before his tribunal at Corinth. Athens retained its Areopagus and local civic leadership.',jewish:'Synagogue officials led local Jewish communities; Crispus, Corinth\'s synagogue ruler, believed in Jesus.',refs:['Acts 17:16\u201334','Acts 18:1\u201317']}
+  },
+  asia:{
+    j3:{roman:'A Roman proconsul held provincial authority. Acts also names the Asiarchs and Ephesus\'s town clerk as influential civic figures, but not the proconsul by name.',jewish:'Local synagogue leadership remained influential; Paul initially taught in the Ephesian synagogue before moving to the hall of Tyrannus.',refs:['Acts 19:1\u201341','Acts 20:17\u201338']}
+  },
+  malta:{
+    j4:{roman:'Publius is called the leading man of the island and hosts Paul\'s party after the shipwreck.',refs:['Acts 28:1\u201310']}
+  },
+  rome:{
+    j2:{roman:'Claudius was emperor and ordered Jews to leave Rome, which brought Priscilla and Aquila to Corinth.',jewish:'The expulsion disrupted Rome\'s Jewish community and the young Christian movement there.',refs:['Acts 18:1\u20132']},
+    j4:{roman:'Nero was emperor. Paul lived under guard and awaited the imperial legal process after appealing to Caesar.',jewish:'Paul summoned Rome\'s local Jewish leaders and explained his case and hope before teaching those who came to him.',refs:['Acts 25:10\u201312','Acts 28:16\u201331']}
   }
 };
 
@@ -1376,7 +1463,40 @@ function openSignificantPlaceModal(key){
   const site = SIGNIFICANT_PLACES[key];
   const refs = site.refs.map(ref=>`<span class="scripture-ref">${ref}</span>`).join('');
   showModal(PLACES[key].name,
-    `<p>${site.summary}</p><div class="scripture-refs" aria-label="Scripture references">${refs}</div>`);
+    `<p>${site.summary}</p><div class="scripture-refs" aria-label="Scripture references">${refs}</div>`+
+    `<button class="authorities-open" id="authoritiesOpen">Authorities</button>`);
+  document.getElementById('authoritiesOpen').addEventListener('click', ()=>{
+    const activeJourney = LEGS[current].j;
+    const eraIndex = Math.max(0, AUTHORITY_ERAS.findIndex(era=>era.j===activeJourney));
+    showAuthorityScreen(key, eraIndex);
+  });
+}
+function showAuthorityScreen(key, eraIndex){
+  const safeIndex = Math.max(0, Math.min(AUTHORITY_ERAS.length-1, eraIndex));
+  const era = AUTHORITY_ERAS[safeIndex];
+  const regionKey = PLACE_AUTHORITY_REGION[key];
+  const region = AUTHORITY_REGIONS[regionKey];
+  const detail = (AUTHORITY_DETAILS[regionKey] && AUTHORITY_DETAILS[regionKey][era.j]) || {};
+  const roman = detail.roman || region.roman;
+  const jewish = detail.jewish || region.jewish;
+  const refs = (detail.refs || []).map(ref=>`<span class="scripture-ref">${ref}</span>`).join('');
+  const refBlock = refs
+    ? `<div class="scripture-refs" aria-label="Authority references">${refs}</div>`
+    : `<div class="authority-note">Acts does not identify a local officeholder here for this period.</div>`;
+  showModal(`${PLACES[key].name} \u00b7 Authorities`,
+    `<div class="authority-era">${era.label} \u00b7 ${safeIndex+1} of ${AUTHORITY_ERAS.length}</div>`+
+    `<div class="authority-card"><h4>Roman authority</h4><p><strong>Emperor:</strong> ${era.emperor}<br>${roman}</p></div>`+
+    `<div class="authority-card"><h4>Jewish leadership</h4><p>${jewish}</p></div>`+
+    refBlock+
+    `<div class="authority-note">Area: ${region.name}. Dates and some officeholders are approximate.</div>`+
+    `<div class="authority-nav">`+
+      `<button class="authority-earlier" id="authorityEarlier" ${safeIndex===0?'disabled':''}>Earlier</button>`+
+      `<button class="authority-back" id="authorityBack">Back</button>`+
+      `<button class="authority-later" id="authorityLater" ${safeIndex===AUTHORITY_ERAS.length-1?'disabled':''}>Later</button>`+
+    `</div>`);
+  document.getElementById('authorityEarlier').addEventListener('click', ()=> showAuthorityScreen(key, safeIndex-1));
+  document.getElementById('authorityLater').addEventListener('click', ()=> showAuthorityScreen(key, safeIndex+1));
+  document.getElementById('authorityBack').addEventListener('click', ()=> openSignificantPlaceModal(key));
 }
 document.getElementById('infoBtn').addEventListener('click', ()=> showModal(ABOUT_TITLE, ABOUT_BODY));
 document.getElementById('modalClose').addEventListener('click', ()=> modalBack.classList.remove('show'));
