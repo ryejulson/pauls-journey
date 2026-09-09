@@ -107,7 +107,8 @@
     position:absolute; top:0; left:0;
     transform-origin:0 0;
     transition:transform .85s cubic-bezier(.22,.9,.26,1);
-    will-change:transform;
+    shape-rendering:geometricPrecision;
+    text-rendering:optimizeLegibility;
   }
   .land{ fill:var(--land); }
   .land-noise{ pointer-events:none; mix-blend-mode:overlay; }
@@ -148,14 +149,14 @@
   }
   .holy-context-dot{ fill:rgba(231,196,119,.72); }
   .holy-detail-label{
-    font-family:'Oswald',sans-serif; font-size:3.2px; letter-spacing:.15px;
+    font-family:'Oswald',sans-serif; font-size:11.5px; letter-spacing:.35px;
     fill:rgba(238,233,222,.76); paint-order:stroke;
-    stroke:rgba(4,4,6,.92); stroke-width:1.1px; stroke-linejoin:round;
+    stroke:rgba(4,4,6,.92); stroke-width:2.5px; stroke-linejoin:round;
   }
   .holy-detail-label.water{ fill:#9fd0e8; font-style:italic; }
-  .holy-detail-label.terrain{ fill:rgba(231,196,119,.68); font-size:2.8px; letter-spacing:.25px; }
+  .holy-detail-label.terrain{ fill:rgba(231,196,119,.68); font-size:10px; letter-spacing:.6px; }
   svg.holy-detail-view #ancientLabels,
-  svg.holy-detail-view #modernLabels{ opacity:.10; }
+  svg.holy-detail-view #modernLabels{ opacity:0; }
   svg.holy-detail-view #seaLabels{ opacity:0; }
 
   .region-label{ text-anchor:middle; dominant-baseline:middle; pointer-events:none; }
@@ -167,6 +168,7 @@
 
   .route{
     fill:none; stroke-linecap:round; stroke-linejoin:round;
+    vector-effect:non-scaling-stroke;
     transition:stroke .5s ease, opacity .5s ease, stroke-width .5s ease;
   }
   .route.future{ stroke:var(--red-future); stroke-width:2; opacity:.5; }
@@ -181,7 +183,11 @@
   .place-dot{ fill:#6b6864; opacity:.55; }
   .place-dot.endpoint{ fill:var(--gold); opacity:1; }
   .place-dot.endpoint.pulse{ animation:pulse 1.8s ease-out infinite; }
-  .place-dot-ring{ fill:none; stroke:var(--gold); opacity:0; }
+  .place-dot-ring{
+    fill:none; stroke:var(--gold); opacity:0;
+    vector-effect:non-scaling-stroke;
+    transform-box:fill-box; transform-origin:center;
+  }
   .place-dot-ring.pulse{ animation:pulsering 1.8s ease-out infinite; }
   .church-star{
     fill:var(--gold); stroke:#241a02; stroke-width:0.9; cursor:pointer;
@@ -280,7 +286,7 @@
      styling on touch-sized devices. */
   @media (pointer:coarse), (max-width:900px){
     .route.active, .church-star{ filter:none; }
-    svg#map{ will-change:transform; }
+    svg#map{ will-change:auto; }
   }
   .zoombtn{
     width:32px; height:32px; border-radius:8px;
@@ -1405,6 +1411,7 @@ function linePathLatLon(points, close=false){
 }
 
 const holyDetailG = svgEl('g',{id:'holyLandDetail','aria-hidden':'true'});
+const holyFixedEls=[];
 // Accurate sea fill masks the coarse base land edge without drawing the clipped
 // dataset's artificial north/west frame.
 const mediterraneanWater = [[34.08,33.45],[31.08,33.45],...HOLY_COAST,[34.08,35.68]];
@@ -1421,9 +1428,12 @@ HOLY_TERRAIN.forEach(points=>{
 });
 HOLY_CONTEXT_PLACES.forEach(([name,lat,lon])=>{
   const p=project(lat,lon);
-  holyDetailG.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r:.72,class:'holy-context-dot'}));
-  const t=svgEl('text',{x:p.x+1.5,y:p.y-.9,class:'holy-detail-label'});
-  t.textContent=name; holyDetailG.appendChild(t);
+  const anchored=svgEl('g',{transform:`translate(${p.x} ${p.y})`});
+  anchored.appendChild(svgEl('circle',{cx:0,cy:0,r:2.1,class:'holy-context-dot'}));
+  const t=svgEl('text',{x:5,y:-3,class:'holy-detail-label'});
+  t.textContent=name; anchored.appendChild(t);
+  holyDetailG.appendChild(anchored);
+  holyFixedEls.push({el:anchored,x:p.x,y:p.y});
 });
 [
   ['Sea of Galilee',32.810,35.600,'water'],
@@ -1435,8 +1445,11 @@ HOLY_CONTEXT_PLACES.forEach(([name,lat,lon])=>{
   ['Jezreel Valley',32.610,35.300,'terrain']
 ].forEach(([name,lat,lon,type])=>{
   const p=project(lat,lon);
-  const t=svgEl('text',{x:p.x,y:p.y,class:`holy-detail-label ${type}`,'text-anchor':'middle'});
-  t.textContent=name; holyDetailG.appendChild(t);
+  const anchored=svgEl('g',{transform:`translate(${p.x} ${p.y})`});
+  const t=svgEl('text',{x:0,y:0,class:`holy-detail-label ${type}`,'text-anchor':'middle'});
+  t.textContent=name; anchored.appendChild(t);
+  holyDetailG.appendChild(anchored);
+  holyFixedEls.push({el:anchored,x:p.x,y:p.y});
 });
 svg.appendChild(holyDetailG);
 const holyDetailCornerA=project(34.20,33.25), holyDetailCornerB=project(30.85,36.05);
@@ -1685,6 +1698,13 @@ function applyTransform(){
   const markerScale=1/s;
   scriptureMarkerEls.forEach(m=>{
     m.el.setAttribute('transform',`translate(${m.x} ${m.y}) scale(${markerScale})`);
+  });
+  holyFixedEls.forEach(m=>{
+    m.el.setAttribute('transform',`translate(${m.x} ${m.y}) scale(${markerScale})`);
+  });
+  Object.values(dotEls).forEach(({dot,ring})=>{
+    dot.setAttribute('r',3.2/s);
+    ring.setAttribute('r',5/s);
   });
 
   const leg = LEGS[current];
