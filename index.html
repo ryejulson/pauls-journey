@@ -660,16 +660,20 @@ const SIGNIFICANT_PLACES = {
   }
 };
 
-/* Authority view follows the five eras already used by the journey tabs.
+/* Authority view follows actual political transitions across Paul's era.
    Named officials are included where Scripture or the historical record gives
    a useful identification; otherwise the app says so instead of guessing. */
 const AUTHORITY_ERAS = [
-  {j:'j0', label:'Conversion \u00b7 c. AD 34\u201336', emperor:'Tiberius (AD 14\u201337)'},
-  {j:'j1', label:'First journey \u00b7 c. AD 46\u201348', emperor:'Claudius (AD 41\u201354)'},
-  {j:'j2', label:'Second journey \u00b7 c. AD 49\u201352', emperor:'Claudius (AD 41\u201354)'},
-  {j:'j3', label:'Third journey \u00b7 c. AD 53\u201357', emperor:'Claudius, then Nero from AD 54'},
-  {j:'j4', label:'Journey to Rome \u00b7 c. AD 59\u201360', emperor:'Nero (AD 54\u201368)'}
+  {id:'e0', label:'c. AD 34\u201336', emperor:'Tiberius (AD 14\u201337)'},
+  {id:'e1', label:'c. AD 37\u201340', emperor:'Caligula (AD 37\u201341)'},
+  {id:'e2', label:'AD 41\u201344', emperor:'Claudius (AD 41\u201354)'},
+  {id:'e3', label:'c. AD 44\u201348', emperor:'Claudius (AD 41\u201354)'},
+  {id:'e4', label:'c. AD 49\u201352', emperor:'Claudius (AD 41\u201354)'},
+  {id:'e5', label:'c. AD 53\u201358', emperor:'Claudius, then Nero from AD 54'},
+  {id:'e6', label:'c. AD 59\u201360', emperor:'Nero (AD 54\u201368)'}
 ];
+
+const CURRENT_ERA_BY_JOURNEY = { j0:'e0', j1:'e3', j2:'e4', j3:'e5', j4:'e6' };
 
 const PLACE_AUTHORITY_REGION = {
   jerusalem:'judea', caesarea:'judea', damascus:'damascus', antiochSyria:'syria',
@@ -692,37 +696,40 @@ const AUTHORITY_REGIONS = {
 
 const AUTHORITY_DETAILS = {
   judea:{
-    j0:{roman:'Pontius Pilate was prefect of Judea under Emperor Tiberius.',jewish:'Joseph Caiaphas was high priest. The high priest and council authorized Saul\'s campaign against believers.',refs:['Acts 9:1\u20132']},
-    j1:{roman:'Tiberius Julius Alexander served as procurator for much of this period under Emperor Claudius.',jewish:'Ananias son of Nedebaios became high priest around AD 46; Jerusalem\'s apostles and elders led the church at the council.',refs:['Acts 15:1\u201335','Josephus, Antiquities 20']},
-    j2:{roman:'Ventidius Cumanus governed Judea under Emperor Claudius.',jewish:'Ananias was high priest, while the chief priests and Sanhedrin remained the central Jewish religious authorities.',refs:['Josephus, Antiquities 20']},
-    j3:{roman:'Antonius Felix governed Judea from Caesarea, first under Claudius and then Nero.',jewish:'Ananias was high priest when Paul appeared before the Sanhedrin and later joined the case against him before Felix.',refs:['Acts 23:1\u20135','Acts 24:1\u201327']},
-    j4:{roman:'Porcius Festus succeeded Felix as governor under Nero and heard Paul\'s appeal at Caesarea.',jewish:'The chief priests and leading men pressed charges. Herod Agrippa II, a Roman client king with influence over Jewish religious affairs, advised Festus but did not govern Judea.',refs:['Acts 24:27','Acts 25:1\u201327','Acts 26:1\u201332']}
+    e0:{roman:'Pontius Pilate was prefect of Judea under Emperor Tiberius.',jewish:'Joseph Caiaphas was high priest. The high priest and council authorized Saul\'s campaign against believers. Herod Antipas separately ruled Galilee and Perea as a Roman client tetrarch.',refs:['Acts 9:1\u20132','Luke 3:1\u20132']},
+    e1:{roman:'Marullus was prefect of Judea under Caligula. Herod Antipas continued ruling Galilee and Perea until Caligula exiled him around AD 39.',jewish:'The high priesthood changed during this period; Theophilus son of Annas held the office for most of AD 37\u201341.',refs:['Josephus, Antiquities 18']},
+    e2:{roman:'Herod Agrippa I ruled Judea as a Roman client king under Claudius, temporarily reuniting much of his grandfather Herod the Great\'s kingdom.',jewish:'Agrippa I appointed the high priests and exercised strong influence over Jerusalem. Acts records his persecution of the church and his death at Caesarea in AD 44.',refs:['Acts 12:1\u201323','Josephus, Antiquities 19']},
+    e3:{roman:'After Agrippa I died, Judea returned to direct Roman administration. Cuspius Fadus governed first, followed by Tiberius Julius Alexander.',jewish:'Herod of Chalcis, Agrippa I\'s brother, received oversight of the temple and authority to appoint high priests. Ananias son of Nedebaios became high priest around AD 46.',refs:['Acts 15:1\u201335','Josephus, Antiquities 20']},
+    e4:{roman:'Ventidius Cumanus governed Judea under Claudius.',jewish:'Herod Agrippa II became king of Chalcis around AD 50 and inherited influence over the temple and high-priestly appointments. Ananias remained high priest.',refs:['Josephus, Antiquities 20']},
+    e5:{roman:'Antonius Felix governed Judea from Caesarea, first under Claudius and then Nero.',jewish:'Agrippa II ruled territories northeast of Judea and retained authority over high-priestly appointments. Ananias was high priest when Paul appeared before the Sanhedrin and later joined the case before Felix.',refs:['Acts 23:1\u20135','Acts 24:1\u201327','Josephus, Antiquities 20']},
+    e6:{roman:'Porcius Festus succeeded Felix as governor under Nero and heard Paul\'s appeal at Caesarea.',jewish:'The chief priests and leading men pressed charges. Herod Agrippa II, a Roman client king with influence over Jewish religious affairs, advised Festus but did not govern Judea. Bernice accompanied him.',refs:['Acts 24:27','Acts 25:1\u201327','Acts 26:1\u201332']}
   },
   damascus:{
-    j0:{roman:'Tiberius was emperor. At the time of Paul\'s later escape, an ethnarch acting for the Nabataean king Aretas IV guarded Damascus; how this related to Roman control is debated.',jewish:'The Jerusalem high priest authorized Saul to work with Damascus synagogues against followers of Jesus.',refs:['Acts 9:1\u201325','2 Corinthians 11:32\u201333']}
+    e0:{roman:'Damascus remained within Rome\'s Syrian sphere under Tiberius, though its precise administration is uncertain.',jewish:'The Jerusalem high priest authorized Saul to work with Damascus synagogues against followers of Jesus.',refs:['Acts 9:1\u201325']},
+    e1:{roman:'An ethnarch acting for the Nabataean king Aretas IV guarded Damascus when Paul escaped; how this authority related to Rome is debated.',refs:['2 Corinthians 11:32\u201333']}
   },
   cyprus:{
-    j1:{roman:'Sergius Paulus is named as the proconsul of Cyprus when Paul and Barnabas reach Paphos.',refs:['Acts 13:6\u201312']}
+    e3:{roman:'Sergius Paulus is named as the proconsul of Cyprus when Paul and Barnabas reach Paphos.',refs:['Acts 13:6\u201312']}
   },
   galatia:{
-    j1:{roman:'Roman colonial and city authorities governed the region. Acts names no provincial governor during these visits.',jewish:'Synagogue leaders opposed Paul in Pisidian Antioch and Iconium; at Lystra the crowd and city population dominate the account.',refs:['Acts 13:14\u201314:20']},
-    j2:{roman:'Roman provincial and local civic authorities remained in charge; Acts names no governor.',jewish:'Local believers and elders led the churches Paul revisited; Timothy joined the mission at Lystra.',refs:['Acts 16:1\u20135']}
+    e3:{roman:'Roman colonial and city authorities governed the region. Acts names no provincial governor during these visits.',jewish:'Synagogue leaders opposed Paul in Pisidian Antioch and Iconium; at Lystra the crowd and city population dominate the account.',refs:['Acts 13:14\u201314:20']},
+    e4:{roman:'Roman provincial and local civic authorities remained in charge; Acts names no governor.',jewish:'Local believers and elders led the churches Paul revisited; Timothy joined the mission at Lystra.',refs:['Acts 16:1\u20135']}
   },
   macedonia:{
-    j2:{roman:'Philippi\'s civic magistrates ordered Paul and Silas beaten and jailed; the jailer served under that local Roman authority.',jewish:'Acts names no synagogue ruler at Philippi and describes believers first gathering at a place of prayer by the river.',refs:['Acts 16:11\u201340']}
+    e4:{roman:'Philippi\'s civic magistrates ordered Paul and Silas beaten and jailed; the jailer served under that local Roman authority.',jewish:'Acts names no synagogue ruler at Philippi and describes believers first gathering at a place of prayer by the river.',refs:['Acts 16:11\u201340']}
   },
   achaia:{
-    j2:{roman:'Gallio was proconsul of Achaia when Jewish opponents brought Paul before his tribunal at Corinth. Athens retained its Areopagus and local civic leadership.',jewish:'Synagogue officials led local Jewish communities; Crispus, Corinth\'s synagogue ruler, believed in Jesus.',refs:['Acts 17:16\u201334','Acts 18:1\u201317']}
+    e4:{roman:'Gallio was proconsul of Achaia when Jewish opponents brought Paul before his tribunal at Corinth. Athens retained its Areopagus and local civic leadership.',jewish:'Synagogue officials led local Jewish communities; Crispus, Corinth\'s synagogue ruler, believed in Jesus.',refs:['Acts 17:16\u201334','Acts 18:1\u201317']}
   },
   asia:{
-    j3:{roman:'A Roman proconsul held provincial authority. Acts also names the Asiarchs and Ephesus\'s town clerk as influential civic figures, but not the proconsul by name.',jewish:'Local synagogue leadership remained influential; Paul initially taught in the Ephesian synagogue before moving to the hall of Tyrannus.',refs:['Acts 19:1\u201341','Acts 20:17\u201338']}
+    e5:{roman:'A Roman proconsul held provincial authority. Acts also names the Asiarchs and Ephesus\'s town clerk as influential civic figures, but not the proconsul by name.',jewish:'Local synagogue leadership remained influential; Paul initially taught in the Ephesian synagogue before moving to the hall of Tyrannus.',refs:['Acts 19:1\u201341','Acts 20:17\u201338']}
   },
   malta:{
-    j4:{roman:'Publius is called the leading man of the island and hosts Paul\'s party after the shipwreck.',refs:['Acts 28:1\u201310']}
+    e6:{roman:'Publius is called the leading man of the island and hosts Paul\'s party after the shipwreck.',refs:['Acts 28:1\u201310']}
   },
   rome:{
-    j2:{roman:'Claudius was emperor and ordered Jews to leave Rome, which brought Priscilla and Aquila to Corinth.',jewish:'The expulsion disrupted Rome\'s Jewish community and the young Christian movement there.',refs:['Acts 18:1\u20132']},
-    j4:{roman:'Nero was emperor. Paul lived under guard and awaited the imperial legal process after appealing to Caesar.',jewish:'Paul summoned Rome\'s local Jewish leaders and explained his case and hope before teaching those who came to him.',refs:['Acts 25:10\u201312','Acts 28:16\u201331']}
+    e4:{roman:'Claudius was emperor and ordered Jews to leave Rome, which brought Priscilla and Aquila to Corinth.',jewish:'The expulsion disrupted Rome\'s Jewish community and the young Christian movement there.',refs:['Acts 18:1\u20132']},
+    e6:{roman:'Nero was emperor. Paul lived under guard and awaited the imperial legal process after appealing to Caesar.',jewish:'Paul summoned Rome\'s local Jewish leaders and explained his case and hope before teaching those who came to him.',refs:['Acts 25:10\u201312','Acts 28:16\u201331']}
   }
 };
 
@@ -1467,7 +1474,8 @@ function openSignificantPlaceModal(key){
     `<button class="authorities-open" id="authoritiesOpen">Authorities</button>`);
   document.getElementById('authoritiesOpen').addEventListener('click', ()=>{
     const activeJourney = LEGS[current].j;
-    const eraIndex = Math.max(0, AUTHORITY_ERAS.findIndex(era=>era.j===activeJourney));
+    const targetEra = CURRENT_ERA_BY_JOURNEY[activeJourney];
+    const eraIndex = Math.max(0, AUTHORITY_ERAS.findIndex(era=>era.id===targetEra));
     showAuthorityScreen(key, eraIndex);
   });
 }
@@ -1476,7 +1484,7 @@ function showAuthorityScreen(key, eraIndex){
   const era = AUTHORITY_ERAS[safeIndex];
   const regionKey = PLACE_AUTHORITY_REGION[key];
   const region = AUTHORITY_REGIONS[regionKey];
-  const detail = (AUTHORITY_DETAILS[regionKey] && AUTHORITY_DETAILS[regionKey][era.j]) || {};
+  const detail = (AUTHORITY_DETAILS[regionKey] && AUTHORITY_DETAILS[regionKey][era.id]) || {};
   const roman = detail.roman || region.roman;
   const jewish = detail.jewish || region.jewish;
   const refs = (detail.refs || []).map(ref=>`<span class="scripture-ref">${ref}</span>`).join('');
