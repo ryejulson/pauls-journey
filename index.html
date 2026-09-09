@@ -146,6 +146,18 @@
     transition:transform .18s ease;
   }
   .church-star:hover, .church-star:focus{ transform:scale(1.35); outline:none; }
+  .scripture-site{
+    cursor:pointer; transform-box:fill-box; transform-origin:center;
+    transition:transform .18s ease;
+  }
+  .scripture-site:hover, .scripture-site:focus{ transform:scale(1.3); outline:none; }
+  .scripture-site .site-hit{ fill:transparent; pointer-events:all; }
+  .scripture-site .site-diamond{
+    fill:#9fd0e8; stroke:#07151d; stroke-width:1.1;
+  }
+  .scripture-site .site-mark{
+    fill:none; stroke:#07151d; stroke-width:1.15; stroke-linecap:round;
+  }
   @keyframes pulse{
     0%{ opacity:1; } 60%{ opacity:1;} 100%{ opacity:1; }
   }
@@ -307,7 +319,8 @@
   .modal-back.show{ opacity:1; pointer-events:auto; }
   .modal{
     background:#0d0d0f; border:1px solid rgba(255,255,255,0.12); border-radius:10px;
-    max-width:420px; padding:20px 22px; font-size:13.5px; line-height:1.55; color:var(--text-dim);
+    max-width:420px; max-height:82vh; overflow-y:auto;
+    padding:20px 22px; font-size:13.5px; line-height:1.55; color:var(--text-dim);
   }
   .modal h3{
     font-family:'Oswald',sans-serif; color:#fff; margin:0 0 10px; font-size:16px; letter-spacing:.03em;
@@ -316,6 +329,12 @@
     margin-top:14px; background:var(--red); color:#180402; border:none; padding:8px 16px;
     border-radius:6px; font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:.04em;
     cursor:pointer; text-transform:uppercase; font-size:12px;
+  }
+  .scripture-refs{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .scripture-ref{
+    font-family:'Oswald',sans-serif; font-size:11.5px; letter-spacing:.03em;
+    color:#bfe6f7; border:1px solid rgba(159,208,232,.38);
+    background:rgba(159,208,232,.08); padding:3px 8px; border-radius:999px;
   }
 
   @media (min-width:720px){
@@ -380,7 +399,7 @@
     <p>Routes are reconstructed from the book of Acts using traditional identifications of ancient place names. Lines show approximate sea and land connections between stops, not literal roads or shipping lanes, and distances are straight-line (great-circle) estimates &mdash; actual travel would have followed coastlines, winds, and roads, and taken longer.</p>
     <p>Ancient region names reflect Roman provinces around the time of Paul's journeys, with one exception: Arabia was still the independent Nabataean Kingdom in Paul's day, not yet annexed as the Roman province of Arabia Petraea (that happened in AD 106). Modern country names are simplified and approximate, shown for geographic orientation only &mdash; they don't reflect a position on any disputed border. One historical note: ancient Antioch (modern Antakya) is today part of Turkey, not Syria, following a 1939 border change.</p>
     <p>Letter attributions follow traditional, widely-held datings; a few (noted inline) are genuinely disputed among scholars. The Pastoral Epistles (1&ndash;2 Timothy, Titus) aren't shown &mdash; tradition places them after a release and further travel that Acts doesn't narrate, so they fall outside this map.</p>
-    <p>Gold stars mark churches Paul founded, strengthened, or wrote to \u2014 tap one for its story.</p>
+    <p>Gold stars mark churches Paul founded, strengthened, or wrote to. Blue diamonds mark places with especially significant events in the biblical narrative. Tap either symbol for its story and Scripture references.</p>
     </div>
     <button id="modalClose">Close</button>
   </div>
@@ -560,6 +579,64 @@ const CHURCHES = {
   ephesus: "Paul's longest stay anywhere \u2014 about three years (Acts 19) \u2014 teaching daily in the hall of Tyrannus until, Luke says, \u201call the residents of Asia heard the word.\u201d Marked by extraordinary miracles, public burning of magic scrolls, and a riot started by silversmiths whose Artemis-idol trade was suffering. Traditionally the recipient of Ephesians, though some early manuscripts lack the words \u201cin Ephesus,\u201d suggesting it may have circulated more widely.",
   colossae: "Unlike every other church here, Paul never visited Colossae himself \u2014 Colossians 2:1 says as much. It was planted by Epaphras, one of Paul's converts, likely during the intensive Ephesian ministry that reached the whole province of Asia. Paul's letter to the Colossians combats a false teaching blending Jewish practice and local mysticism; the personal letter to Philemon, a Colossian slave-owner, likely traveled with it.",
   rome: "A church of unknown founding \u2014 probably begun by unnamed early believers or Jewish pilgrims, not by any apostle \u2014 that Paul had never visited when he wrote them his longest and most systematic letter, Romans. He finally arrives years later as a prisoner (Acts 28), spending two years under house arrest \u201cproclaiming the kingdom of God\u2026 with all boldness and without hindrance.\u201d Tradition holds Paul was later executed in Rome, beyond where Acts' narrative ends."
+};
+
+/* Major narrative locations. Blue diamonds complement the church stars: they
+   explain why a place matters in Scripture, not merely whether a church was
+   established there. References are intentionally explicit for further study. */
+const SIGNIFICANT_PLACES = {
+  jerusalem: {
+    summary:"Jerusalem anchors Paul's story. After his conversion he meets Peter and James here; later he helps defend Gentile inclusion at the Jerusalem Council. His final visit ends with his arrest in the temple and begins the chain of trials that carries him to Rome.",
+    refs:["Acts 9:26\u201330","Acts 15:1\u201335","Acts 21:17\u201323:30","Galatians 1:18\u201319"]
+  },
+  damascus: {
+    summary:"Near Damascus, the risen Jesus confronts Saul and transforms the church's persecutor into his chosen witness. Ananias restores Saul's sight and baptizes him; Saul then begins proclaiming Jesus in the city's synagogues.",
+    refs:["Acts 9:1\u201325","Acts 22:5\u201316","Acts 26:12\u201320"]
+  },
+  antiochSyria: {
+    summary:"Syrian Antioch becomes Paul's missionary home base. Barnabas brings him here to teach, the disciples are first called Christians here, and the Holy Spirit sets apart Barnabas and Saul from this church for their first mission.",
+    refs:["Acts 11:19\u201330","Acts 13:1\u20133","Acts 14:26\u201328","Acts 15:1\u201335","Galatians 2:11\u201314"]
+  },
+  paphos: {
+    summary:"At the Roman administrative center of Cyprus, Paul confronts Elymas the magician. When Elymas is struck blind, the proconsul Sergius Paulus believes, giving Acts its first recorded conversion of a named Roman official.",
+    refs:["Acts 13:6\u201312"]
+  },
+  lystra: {
+    summary:"In Lystra, Paul heals a man unable to walk. The crowd first tries to worship Paul and Barnabas as gods, then turns against Paul and stones him. Lystra is also Timothy's hometown and the place where he joins Paul's mission.",
+    refs:["Acts 14:8\u201320","Acts 16:1\u20135","2 Timothy 1:5","2 Timothy 3:10\u201311"]
+  },
+  philippi: {
+    summary:"Philippi is the first major Macedonian city reached after Paul's vision. Lydia believes, a slave girl is freed, and an earthquake opens the prison where Paul and Silas are singing; the jailer and his household are then baptized.",
+    refs:["Acts 16:9\u201340","Philippians 1:1","Philippians 4:15\u201316"]
+  },
+  athens: {
+    summary:"In Athens, Paul speaks at the Areopagus to an audience steeped in Greek philosophy and religion. Beginning with their altar to an unknown god, he proclaims the Creator, repentance, judgment, and the resurrection.",
+    refs:["Acts 17:16\u201334"]
+  },
+  corinth: {
+    summary:"Paul remains in Corinth for eighteen months, works with Priscilla and Aquila, and receives divine reassurance to continue speaking. The city becomes a major base of ministry and the recipient of extensive apostolic correspondence.",
+    refs:["Acts 18:1\u201318","1 Corinthians 1:1\u20132","2 Corinthians 1:1","Romans 16:21\u201323"]
+  },
+  ephesus: {
+    summary:"Ephesus is the center of Paul's longest recorded ministry. His teaching spreads throughout Asia, converts publicly renounce magic, and the gospel's effect on the Artemis trade triggers a citywide riot. Paul later summons the Ephesian elders for a final farewell.",
+    refs:["Acts 18:19\u201321","Acts 19:1\u201341","Acts 20:17\u201338","1 Corinthians 16:8\u20139"]
+  },
+  miletus: {
+    summary:"At Miletus, Paul gives his farewell address to the elders of Ephesus. He reviews his ministry, warns them to guard the flock, and entrusts them to God before an emotional departure for Jerusalem.",
+    refs:["Acts 20:15\u201338"]
+  },
+  caesarea: {
+    summary:"Caesarea is a decisive crossroads in Acts. The gospel reaches the Gentile centurion Cornelius here; later Agabus warns Paul of his coming arrest. Paul is then imprisoned for two years and defends the faith before Felix, Festus, and Agrippa. In Acts 25 he appeals to Caesar, determining that his case will go to Rome.",
+    refs:["Acts 10:1\u201348","Acts 21:8\u201314","Acts 23:23\u201326:32","Acts 25:1\u201312"]
+  },
+  malta: {
+    summary:"After the shipwreck, Malta's inhabitants welcome the survivors. Paul survives a viper bite, heals the father of the island's leading official, and heals others who come to him before the voyage resumes.",
+    refs:["Acts 27:39\u201328:11"]
+  },
+  rome: {
+    summary:"Rome is the destination toward which the final chapters of Acts move. Paul arrives as a prisoner, meets the local Jewish leaders, and spends two years proclaiming God's kingdom and teaching about Jesus with boldness while under house arrest.",
+    refs:["Acts 19:21","Acts 23:11","Acts 28:14\u201331","Romans 1:7\u201315"]
+  }
 };
 
 /* Real country coastline data extracted from the user's world.geojson upload.
@@ -987,6 +1064,29 @@ Object.keys(CHURCHES).forEach(k=>{
   svg.appendChild(star);
 });
 
+// Permanent Scripture-significance markers. Offset opposite the church stars
+// so locations that have both remain easy to distinguish and tap.
+Object.keys(SIGNIFICANT_PLACES).forEach(k=>{
+  const p = PLACES[k];
+  const sx = p.x - 10, sy = p.y - 10;
+  const marker = svgEl('g', {
+    class:'scripture-site', tabindex:'0', role:'button',
+    'aria-label':`${p.name} \u2014 show biblical significance and references`
+  });
+  marker.appendChild(svgEl('circle',{cx:sx,cy:sy,r:11,class:'site-hit'}));
+  marker.appendChild(svgEl('path',{
+    d:`M${sx},${sy-7.5} L${sx+7.5},${sy} L${sx},${sy+7.5} L${sx-7.5},${sy} Z`,
+    class:'site-diamond'
+  }));
+  marker.appendChild(svgEl('path',{
+    d:`M${sx-3.5},${sy-2.2} L${sx},${sy-.6} L${sx+3.5},${sy-2.2} M${sx-3.5},${sy+1} L${sx},${sy+2.6} L${sx+3.5},${sy+1}`,
+    class:'site-mark'
+  }));
+  marker.addEventListener('click', e=>{ e.stopPropagation(); openSignificantPlaceModal(k); });
+  marker.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openSignificantPlaceModal(k); } });
+  svg.appendChild(marker);
+});
+
 /* ============================================================
    NAVIGATION / RENDER STATE
 ============================================================ */
@@ -1271,6 +1371,12 @@ function showModal(title, bodyHtml){
 }
 function openChurchModal(key){
   showModal(PLACES[key].name, `<p>${CHURCHES[key]}</p>`);
+}
+function openSignificantPlaceModal(key){
+  const site = SIGNIFICANT_PLACES[key];
+  const refs = site.refs.map(ref=>`<span class="scripture-ref">${ref}</span>`).join('');
+  showModal(`${PLACES[key].name} \u00b7 Scripture significance`,
+    `<p>${site.summary}</p><div class="scripture-refs" aria-label="Scripture references">${refs}</div>`);
 }
 document.getElementById('infoBtn').addEventListener('click', ()=> showModal(ABOUT_TITLE, ABOUT_BODY));
 document.getElementById('modalClose').addEventListener('click', ()=> modalBack.classList.remove('show'));
