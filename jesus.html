@@ -119,6 +119,45 @@
   #countryBorders.dimmed{ opacity:0.14; }
   .grat{ stroke:rgba(255,255,255,0.035); stroke-width:1; }
 
+  /* Close-range Holy Land detail. Kept invisible at regional/world zooms so the
+     broad map stays clean and inexpensive on phones. */
+  #holyLandDetail{
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .28s ease, visibility 0s linear .28s;
+  }
+  #holyLandDetail.visible{
+    opacity:1; visibility:visible;
+    transition:opacity .28s ease;
+  }
+  .holy-sea-fill{ fill:var(--bg-water); }
+  .holy-coast{
+    fill:none; stroke:rgba(166,205,224,.72); stroke-width:1.2;
+    stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke;
+  }
+  .holy-lake{
+    fill:#07151d; stroke:rgba(130,193,221,.82); stroke-width:1.15;
+    stroke-linejoin:round; vector-effect:non-scaling-stroke;
+  }
+  .holy-river{
+    fill:none; stroke:rgba(113,181,211,.84); stroke-width:1.15;
+    stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke;
+  }
+  .holy-terrain{
+    fill:none; stroke:rgba(231,196,119,.24); stroke-width:.85;
+    stroke-dasharray:3 3; stroke-linecap:round; vector-effect:non-scaling-stroke;
+  }
+  .holy-context-dot{ fill:rgba(231,196,119,.72); }
+  .holy-detail-label{
+    font-family:'Oswald',sans-serif; font-size:3.2px; letter-spacing:.15px;
+    fill:rgba(238,233,222,.76); paint-order:stroke;
+    stroke:rgba(4,4,6,.92); stroke-width:1.1px; stroke-linejoin:round;
+  }
+  .holy-detail-label.water{ fill:#9fd0e8; font-style:italic; }
+  .holy-detail-label.terrain{ fill:rgba(231,196,119,.68); font-size:2.8px; letter-spacing:.25px; }
+  svg.holy-detail-view #ancientLabels,
+  svg.holy-detail-view #modernLabels{ opacity:.10; }
+  svg.holy-detail-view #seaLabels{ opacity:0; }
+
   .region-label{ text-anchor:middle; dominant-baseline:middle; pointer-events:none; }
   .region-label.ancient{ font-family:'Cinzel',serif; fill:var(--gold); }
   .region-label.modern{ font-family:'Oswald',sans-serif; font-weight:500; fill:#9fd0e8; }
@@ -1268,6 +1307,141 @@ LANDMASSES.forEach(l=>{
 });
 svg.appendChild(countryBordersG);
 
+/* High-detail physical geography for Jesus's ministry area. Coordinates are
+   Natural Earth 1:10m geometry, reduced to the local frame. The layer fades in
+   only at close zoom; it adds almost no work to ordinary pan/zoom rendering. */
+const HOLY_COAST = [
+  [31.1281,33.5047],[31.1223,33.5729],[31.1148,33.5913],[31.1219,33.5922],
+  [31.1163,33.6144],[31.1176,33.6486],[31.1640,33.8552],[31.2308,34.0489],
+  [31.3267,34.2216],[31.3414,34.2345],[31.3771,34.2813],[31.4073,34.3005],
+  [31.4384,34.3486],[31.4674,34.3670],[31.5351,34.4434],[31.5769,34.4769],
+  [31.6001,34.4885],[31.6277,34.5136],[31.7571,34.6009],[31.7693,34.6115],
+  [31.9211,34.6896],[31.9527,34.7117],[32.0395,34.7425],[32.0603,34.7429],
+  [32.0666,34.7564],[32.2829,34.8380],[32.5524,34.9013],[32.5737,34.9099],
+  [32.6115,34.9144],[32.6277,34.9199],[32.6440,34.9188],[32.7231,34.9411],
+  [32.8150,34.9467],[32.8331,34.9538],[32.8419,34.9718],[32.8397,34.9829],
+  [32.8276,35.0056],[32.8254,35.0175],[32.8265,35.0264],[32.8585,35.0619],
+  [32.8662,35.0666],[32.9051,35.0785],[32.9175,35.0772],[32.9230,35.0647],
+  [32.9372,35.0710],[32.9997,35.0774],[33.0307,35.0914],[33.0489,35.0955],
+  [33.0679,35.0914],[33.0807,35.1058],[33.0873,35.0992],[33.0892,35.1045],
+  [33.0944,35.1061],[33.1017,35.0988],[33.1204,35.1110],[33.1331,35.1254],
+  [33.1412,35.1479],[33.1702,35.1670],[33.1768,35.1612],[33.1786,35.1687],
+  [33.1713,35.1744],[33.2243,35.2037],[33.2548,35.2081],[33.2800,35.1878],
+  [33.2939,35.2096],[33.3132,35.2248],[33.3553,35.2428],[33.3670,35.2452],
+  [33.3970,35.2458],[33.4080,35.2490],[33.4311,35.2673],[33.4440,35.2743],
+  [33.4578,35.2701],[33.4901,35.3212],[33.5150,35.3492],[33.5429,35.3594],
+  [33.5572,35.3619],[33.6425,35.4000],[33.6498,35.3935],[33.6613,35.4093],
+  [33.7022,35.4206],[33.7116,35.4378],[33.7240,35.4373],[33.8035,35.4768],
+  [33.8217,35.4801],[33.8732,35.4827],[33.9021,35.4699],[33.9105,35.4760],
+  [33.9135,35.4857],[33.9113,35.5027],[33.9032,35.5174],[33.9030,35.5241],
+  [33.9074,35.5339],[33.9063,35.5583],[33.9106,35.5718],[33.9170,35.5779],
+  [33.9448,35.5925],[33.9500,35.5919],[33.9508,35.5852],[33.9591,35.5936],
+  [33.9908,35.6105],[33.9946,35.6151],[33.9961,35.6366],[33.9993,35.6404],
+  [34.0085,35.6399],[34.0198,35.6267],[34.0335,35.6263]
+];
+const SEA_OF_GALILEE = [
+  [32.8500,35.6397],[32.8406,35.6373],[32.8323,35.6371],[32.8208,35.6409],
+  [32.7940,35.6350],[32.7820,35.6356],[32.7723,35.6409],[32.7696,35.6350],
+  [32.7599,35.6344],[32.7522,35.6341],[32.7178,35.5994],[32.7202,35.5770],
+  [32.7375,35.5696],[32.7570,35.5664],[32.7661,35.5552],[32.7696,35.5493],
+  [32.7935,35.5378],[32.8146,35.5211],[32.8208,35.5172],[32.8520,35.5237],
+  [32.8806,35.5549],[32.8980,35.5917],[32.8959,35.6135],[32.8826,35.6303],
+  [32.8750,35.6376],[32.8650,35.6409]
+];
+const DEAD_SEA_NORTH = [
+  [31.7655,35.5590],[31.7529,35.5864],[31.7305,35.5882],[31.7014,35.5785],
+  [31.5383,35.5546],[31.4968,35.5685],[31.4682,35.5720],[31.3540,35.5446],
+  [31.3319,35.5476],[31.3102,35.5237],[31.3049,35.5128],[31.3063,35.5037],
+  [31.3181,35.5013],[31.3543,35.5125],[31.3676,35.5105],[31.3670,35.4913],
+  [31.3222,35.4422],[31.3266,35.4148],[31.3449,35.4060],[31.3952,35.4019],
+  [31.4358,35.3936],[31.4723,35.4007],[31.5141,35.3927],[31.5324,35.3983],
+  [31.5486,35.4080],[31.5663,35.4148],[31.5777,35.4142],[31.6022,35.4077],
+  [31.6148,35.4080],[31.6242,35.4127],[31.6557,35.4354],[31.6952,35.4545],
+  [31.7305,35.4766],[31.7558,35.5069],[31.7655,35.5514]
+];
+const DEAD_SEA_SOUTH = [
+  [31.1995,35.5111],[31.1889,35.5264],[31.1697,35.5311],[31.1636,35.5275],
+  [31.1447,35.5072],[31.1391,35.5037],[31.1226,35.5122],[31.1103,35.5178],
+  [31.1038,35.5105],[31.0885,35.4855],[31.0864,35.4763],[31.0873,35.4593],
+  [31.0938,35.4160],[31.1009,35.4007],[31.1126,35.3930],[31.1418,35.3883],
+  [31.1756,35.3636],[31.2104,35.3586],[31.2354,35.3698],[31.2304,35.4007],
+  [31.2360,35.4051],[31.2516,35.4213],[31.2192,35.4613],[31.2107,35.4757]
+];
+const JORDAN_RIVER = [
+  [[33.5964,35.8639],[33.5659,35.8258],[33.5115,35.8034],[33.4770,35.7612],
+   [33.4309,35.6956],[33.3890,35.6650],[33.3118,35.6387],[33.2545,35.6282],
+   [33.1975,35.5968],[33.1813,35.5934],[32.9959,35.5840],[32.9242,35.5982],
+   [32.8997,35.5989]],
+  [[32.7203,35.5769],[32.6925,35.5605],[32.6562,35.5657],[32.6329,35.5596],
+   [32.6078,35.5652],[32.5730,35.5738],[32.5463,35.5652],[32.5191,35.5514],
+   [32.4894,35.5704],[32.4644,35.5720],[32.4365,35.5514],[32.4114,35.5543],
+   [32.3773,35.5635],[32.3585,35.5569],[32.3284,35.5562],[32.3019,35.5606],
+   [32.2639,35.5641],[32.2379,35.5590],[32.1746,35.5547],[32.1418,35.5462],
+   [32.1110,35.5347],[32.0753,35.5278],[32.0119,35.5241],[31.9642,35.5379],
+   [31.9195,35.5241],[31.8394,35.5486],[31.8195,35.5379],[31.7655,35.5590]],
+  [[31.3248,35.4234],[31.3032,35.4218],[31.2823,35.4077],[31.2579,35.3953],[31.2305,35.4006]]
+];
+const HOLY_TERRAIN = [
+  [[33.12,35.34],[32.92,35.38],[32.73,35.30],[32.50,35.25],[32.25,35.22],[31.98,35.20],[31.72,35.21],[31.46,35.14]],
+  [[33.28,35.73],[33.05,35.76],[32.82,35.75],[32.56,35.76],[32.28,35.72],[31.98,35.69],[31.70,35.66]]
+];
+const HOLY_CONTEXT_PLACES = [
+  ['Caesarea Maritima',32.500,34.890],['Joppa',32.050,34.750],
+  ['Sepphoris',32.746,35.277],['Magdala',32.826,35.515],
+  ['Tiberias',32.796,35.531],['Chorazin',32.911,35.562],
+  ['Bethsaida (?)',32.910,35.630],['Hebron',31.533,35.100],
+  ['Qumran',31.741,35.458]
+];
+
+function linePathLatLon(points, close=false){
+  if(!points.length) return '';
+  const projected = points.map(([lat,lon])=>project(lat,lon));
+  return projected.map((p,i)=>`${i?'L':'M'}${p.x},${p.y}`).join(' ') + (close?' Z':'');
+}
+
+const holyDetailG = svgEl('g',{id:'holyLandDetail','aria-hidden':'true'});
+// Accurate sea fill masks the coarse base land edge without drawing the clipped
+// dataset's artificial north/west frame.
+const mediterraneanWater = [[34.08,33.45],[31.08,33.45],...HOLY_COAST,[34.08,35.68]];
+holyDetailG.appendChild(svgEl('path',{d:linePathLatLon(mediterraneanWater,true),class:'holy-sea-fill'}));
+holyDetailG.appendChild(svgEl('path',{d:linePathLatLon(HOLY_COAST),class:'holy-coast'}));
+[SEA_OF_GALILEE,DEAD_SEA_NORTH,DEAD_SEA_SOUTH].forEach(points=>{
+  holyDetailG.appendChild(svgEl('path',{d:linePathLatLon(points,true),class:'holy-lake'}));
+});
+JORDAN_RIVER.forEach(points=>{
+  holyDetailG.appendChild(svgEl('path',{d:linePathLatLon(points),class:'holy-river'}));
+});
+HOLY_TERRAIN.forEach(points=>{
+  holyDetailG.appendChild(svgEl('path',{d:linePathLatLon(points),class:'holy-terrain'}));
+});
+HOLY_CONTEXT_PLACES.forEach(([name,lat,lon])=>{
+  const p=project(lat,lon);
+  holyDetailG.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r:.72,class:'holy-context-dot'}));
+  const t=svgEl('text',{x:p.x+1.5,y:p.y-.9,class:'holy-detail-label'});
+  t.textContent=name; holyDetailG.appendChild(t);
+});
+[
+  ['Sea of Galilee',32.810,35.600,'water'],
+  ['Dead Sea',31.545,35.500,'water'],
+  ['Jordan River',32.285,35.585,'water'],
+  ['Galilean Hills',32.690,35.355,'terrain'],
+  ['Judean Hills',31.680,35.150,'terrain'],
+  ['Golan Heights',32.980,35.745,'terrain'],
+  ['Jezreel Valley',32.610,35.300,'terrain']
+].forEach(([name,lat,lon,type])=>{
+  const p=project(lat,lon);
+  const t=svgEl('text',{x:p.x,y:p.y,class:`holy-detail-label ${type}`,'text-anchor':'middle'});
+  t.textContent=name; holyDetailG.appendChild(t);
+});
+svg.appendChild(holyDetailG);
+const holyDetailCornerA=project(34.20,33.25), holyDetailCornerB=project(30.85,36.05);
+const HOLY_DETAIL_BOUNDS={
+  minX:Math.min(holyDetailCornerA.x,holyDetailCornerB.x),
+  maxX:Math.max(holyDetailCornerA.x,holyDetailCornerB.x),
+  minY:Math.min(holyDetailCornerA.y,holyDetailCornerB.y),
+  maxY:Math.max(holyDetailCornerA.y,holyDetailCornerB.y)
+};
+
 // background region labels (ancient + modern), toggleable — nudged to clear every route + dot
 function pointInPolygon(x,y,poly){
   let inside=false;
@@ -1483,6 +1657,17 @@ function applyTransform(){
   const cx = legTransform.cx + panX, cy = legTransform.cy + panY;
   const tx = vw/(2*s) - cx, ty = vh/(2*s) - cy;
   svg.style.transform = `scale(${s}) translate(${tx}px, ${ty}px)`;
+
+  const halfVisibleW=vw/(2*s), halfVisibleH=vh/(2*s);
+  const detailInView =
+    cx+halfVisibleW >= HOLY_DETAIL_BOUNDS.minX &&
+    cx-halfVisibleW <= HOLY_DETAIL_BOUNDS.maxX &&
+    cy+halfVisibleH >= HOLY_DETAIL_BOUNDS.minY &&
+    cy-halfVisibleH <= HOLY_DETAIL_BOUNDS.maxY;
+  const showHolyDetail = s/worldBaseline() >= 7.5 && detailInView;
+  holyDetailG.classList.toggle('visible',showHolyDetail);
+  holyDetailG.setAttribute('aria-hidden',String(!showHolyDetail));
+  svg.classList.toggle('holy-detail-view',showHolyDetail);
 
   const leg = LEGS[current];
   const fp = PLACES[leg.path[0]], tp = PLACES[leg.path[leg.path.length-1]];
