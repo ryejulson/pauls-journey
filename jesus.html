@@ -168,7 +168,6 @@
 
   .route{
     fill:none; stroke-linecap:round; stroke-linejoin:round;
-    vector-effect:non-scaling-stroke;
     transition:stroke .5s ease, opacity .5s ease, stroke-width .5s ease;
   }
   .route.future{ stroke:var(--red-future); stroke-width:2; opacity:.5; }
@@ -1701,6 +1700,13 @@ function applyTransform(){
   });
   holyFixedEls.forEach(m=>{
     m.el.setAttribute('transform',`translate(${m.x} ${m.y}) scale(${markerScale})`);
+  });
+  // Set route widths in map units so the outer SVG zoom resolves them to
+  // consistent screen pixels. This is more reliable than non-scaling-stroke
+  // in Mobile Safari when the entire SVG is CSS-transformed.
+  routeEls.forEach((route,i)=>{
+    const screenWidth=i===current ? 2.25 : (i<current ? 1.35 : 1);
+    route.style.strokeWidth=`${screenWidth/s}px`;
   });
   Object.values(dotEls).forEach(({dot,ring})=>{
     dot.setAttribute('r',3.2/s);
