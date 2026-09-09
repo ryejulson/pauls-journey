@@ -1375,7 +1375,7 @@ function openChurchModal(key){
 function openSignificantPlaceModal(key){
   const site = SIGNIFICANT_PLACES[key];
   const refs = site.refs.map(ref=>`<span class="scripture-ref">${ref}</span>`).join('');
-  showModal(`${PLACES[key].name} \u00b7 Scripture significance`,
+  showModal(PLACES[key].name,
     `<p>${site.summary}</p><div class="scripture-refs" aria-label="Scripture references">${refs}</div>`);
 }
 document.getElementById('infoBtn').addEventListener('click', ()=> showModal(ABOUT_TITLE, ABOUT_BODY));
