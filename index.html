@@ -53,9 +53,14 @@
   .brand-row{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
   }
+  .menu-btn{
+    width:30px; height:30px; flex:none; border:1px solid rgba(255,255,255,.16);
+    border-radius:7px; background:rgba(255,255,255,.04); color:var(--text);
+    font-size:17px; line-height:1; cursor:pointer;
+  }
   .brand{
     font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:.14em;
-    font-size:12px; color:var(--gold-dim); text-transform:uppercase; flex:none;
+    font-size:12px; color:var(--gold-dim); text-transform:uppercase; flex:1;
   }
   .era-toggle{
     display:flex; gap:3px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
@@ -252,6 +257,36 @@
     transition:opacity .6s ease;
   }
 
+  /* ---------- hamburger drawer ---------- */
+  .drawer-back{
+    position:fixed; inset:0; z-index:30; background:rgba(0,0,0,.62);
+    opacity:0; pointer-events:none; transition:opacity .22s ease;
+  }
+  .drawer-back.show{ opacity:1; pointer-events:auto; }
+  .drawer{
+    width:min(82vw,310px); height:100%; padding:calc(18px + env(safe-area-inset-top)) 16px 20px;
+    background:#0d0d0f; border-right:1px solid rgba(255,255,255,.12);
+    transform:translateX(-100%); transition:transform .26s cubic-bezier(.22,.8,.25,1);
+    display:flex; flex-direction:column;
+  }
+  .drawer-back.show .drawer{ transform:translateX(0); }
+  .drawer-head{
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;
+    font-family:'Oswald',sans-serif; color:var(--gold); letter-spacing:.12em;
+    text-transform:uppercase; font-size:12px;
+  }
+  .drawer-close{
+    border:0; background:transparent; color:var(--text-dim); font-size:24px; cursor:pointer;
+  }
+  .drawer-link{
+    display:block; width:100%; padding:12px 13px; margin-bottom:7px; border-radius:8px;
+    border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.025);
+    color:var(--text); text-decoration:none; font-family:'Oswald',sans-serif;
+    text-transform:uppercase; letter-spacing:.06em; font-size:13px; text-align:left;
+  }
+  .drawer-link.active{ color:#180402; background:var(--red); border-color:var(--red); font-weight:600; }
+  button.drawer-link{ cursor:pointer; }
+
   /* ---------- bottom info panel ---------- */
   .panel{
     flex:none; z-index:5;
@@ -370,6 +405,7 @@
 
   <div class="topbar">
     <div class="brand-row">
+      <button class="menu-btn" id="menuBtn" aria-label="Open navigation menu" aria-expanded="false">&#9776;</button>
       <div class="brand">Paul's Journeys</div>
       <div class="era-toggle" id="eraToggle">
         <button class="era-btn active" data-era="ancient">Ancient</button>
@@ -411,6 +447,15 @@
       <div class="dotrow" id="dotRow"></div>
     </div>
   </div>
+</div>
+
+<div class="drawer-back" id="drawerBack" aria-hidden="true">
+  <nav class="drawer" aria-label="Map navigation">
+    <div class="drawer-head"><span>Explore</span><button class="drawer-close" id="drawerClose" aria-label="Close navigation menu">&times;</button></div>
+    <a class="drawer-link active" href="./">Paul's Journeys</a>
+    <a class="drawer-link" href="jesus.html">Life of Jesus</a>
+    <button class="drawer-link" id="drawerAbout">About &amp; Legend</button>
+  </nav>
 </div>
 
 <div class="modal-back" id="modalBack">
@@ -1509,6 +1554,24 @@ function showAuthorityScreen(key, eraIndex){
 document.getElementById('infoBtn').addEventListener('click', ()=> showModal(ABOUT_TITLE, ABOUT_BODY));
 document.getElementById('modalClose').addEventListener('click', ()=> modalBack.classList.remove('show'));
 modalBack.addEventListener('click', e=>{ if(e.target===modalBack) modalBack.classList.remove('show'); });
+
+// hamburger navigation
+const drawerBack = document.getElementById('drawerBack');
+const menuBtn = document.getElementById('menuBtn');
+function openDrawer(){
+  drawerBack.classList.add('show'); drawerBack.setAttribute('aria-hidden','false');
+  menuBtn.setAttribute('aria-expanded','true');
+}
+function closeDrawer(){
+  drawerBack.classList.remove('show'); drawerBack.setAttribute('aria-hidden','true');
+  menuBtn.setAttribute('aria-expanded','false');
+}
+menuBtn.addEventListener('click', openDrawer);
+document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+drawerBack.addEventListener('click', e=>{ if(e.target===drawerBack) closeDrawer(); });
+document.getElementById('drawerAbout').addEventListener('click', ()=>{
+  closeDrawer(); showModal(ABOUT_TITLE, ABOUT_BODY);
+});
 
 // era toggle
 const eraToggle = document.getElementById('eraToggle');
