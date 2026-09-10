@@ -131,6 +131,7 @@
     transition:opacity .28s ease;
   }
   .holy-sea-fill{ fill:var(--bg-water); }
+  .holy-relief{ opacity:.88; }
   .holy-coast{
     fill:none; stroke:rgba(166,205,224,.72); stroke-width:1.2;
     stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke;
@@ -1411,6 +1412,16 @@ function linePathLatLon(points, close=false){
 
 const holyDetailG = svgEl('g',{id:'holyLandDetail','aria-hidden':'true'});
 const holyFixedEls=[];
+const HOLY_RELIEF_BOUNDS={west:34.2,east:36.05,south:30.85,north:34.2};
+const reliefNW=project(HOLY_RELIEF_BOUNDS.north,HOLY_RELIEF_BOUNDS.west);
+const reliefSE=project(HOLY_RELIEF_BOUNDS.south,HOLY_RELIEF_BOUNDS.east);
+const holyReliefImage=svgEl('image',{
+  x:reliefNW.x,y:reliefNW.y,
+  width:reliefSE.x-reliefNW.x,height:reliefSE.y-reliefNW.y,
+  preserveAspectRatio:'none',class:'holy-relief'
+});
+holyDetailG.appendChild(holyReliefImage);
+let holyReliefLoaded=false;
 // Accurate sea fill masks the coarse base land edge without drawing the clipped
 // dataset's artificial north/west frame.
 const mediterraneanWater = [[34.08,33.45],[31.08,33.45],...HOLY_COAST,[34.08,35.68]];
@@ -1688,6 +1699,11 @@ function applyTransform(){
     cy+halfVisibleH >= HOLY_DETAIL_BOUNDS.minY &&
     cy-halfVisibleH <= HOLY_DETAIL_BOUNDS.maxY;
   const showHolyDetail = s/worldBaseline() >= 7.5 && detailInView;
+  if(showHolyDetail && !holyReliefLoaded){
+    holyReliefImage.setAttribute('href','holy-land-relief.webp');
+    holyReliefImage.setAttributeNS('http://www.w3.org/1999/xlink','href','holy-land-relief.webp');
+    holyReliefLoaded=true;
+  }
   holyDetailG.classList.toggle('visible',showHolyDetail);
   holyDetailG.setAttribute('aria-hidden',String(!showHolyDetail));
   svg.classList.toggle('holy-detail-view',showHolyDetail);
